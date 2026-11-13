@@ -1,0 +1,135 @@
+/* The 待辦 (todo-), 紀錄 (rec-), 商店 (shop-) tabs and the 白噪音 sheet (snd-).
+   Builds on the .group / .row / .btn tokens in base.css. */
+
+/* ---- shared item art ---- */
+.silhouette { filter: brightness(0) opacity(0.25); }
+.emoji-fallback {
+  display: inline-grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1.6em;
+  line-height: 1;
+}
+.emoji-fallback.silhouette { filter: grayscale(1) brightness(0) opacity(0.25); }
+
+/* ---- 待辦 ---- */
+.todo-add { gap: 8px; padding-right: 8px; }
+.todo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  padding: 0 2px;
+}
+.todo-input:focus { outline: none; }
+.todo-add:focus-within { box-shadow: inset 0 0 0 2px rgba(74, 107, 166, 0.35); border-radius: var(--radius); }
+.todo-add-btn { flex: 0 0 auto; }
+
+.todo-row { gap: 4px; padding: 2px 4px 2px 2px; }
+.todo-toggle { flex: 0 0 auto; }
+.todo-text { padding: 6px 4px; }
+.todo-title { overflow-wrap: anywhere; }
+.todo-row.done .todo-title { text-decoration: line-through; color: var(--ink-2); }
+.todo-action { flex: 0 0 auto; color: var(--ink-2); }
+.todo-delete { color: var(--danger); }
+
+.todo-rename { display: grid; gap: 14px; padding: 4px 0 8px; }
+.todo-rename .todo-input {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0 12px;
+}
+.todo-rename .todo-input:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* ---- 紀錄 ---- */
+.rec-segmented { margin-bottom: 16px; }
+.rec-segmented button { min-height: 44px; }
+.rec-value { font-variant-numeric: tabular-nums; }
+
+.rec-chart-wrap { padding: 12px 10px 6px; }
+.rec-chart { display: block; width: 100%; height: auto; max-height: 200px; overflow: visible; }
+.rec-chart-axis { stroke: var(--line); stroke-width: 1; }
+.rec-chart-value { fill: var(--ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rec-chart-day { fill: var(--ink-2); font-size: 13px; }
+
+.rec-record { gap: 10px; font-size: 0.95rem; }
+.rec-record-art { flex: 0 0 22px; width: 22px; height: 22px; font-size: 14px; }
+.rec-record-art img { width: 22px; height: 22px; object-fit: contain; }
+.rec-record-head { display: flex; gap: 8px; flex-wrap: wrap; }
+.rec-time { font-variant-numeric: tabular-nums; }
+.rec-todo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-minutes { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+
+.group > h2.rec-grid-title { font-size: 1rem; color: var(--ink); font-weight: 700; margin-bottom: 10px; }
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 12px;
+}
+.rec-tile {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-height: 96px;
+  padding: 10px 4px;
+  border-radius: 16px;
+  background: var(--wall);
+  text-align: center;
+  min-width: 0;
+}
+.rec-tile-art { width: 52px; height: 52px; font-size: 32px; }
+.rec-tile-art img { width: 52px; height: 52px; object-fit: contain; }
+.rec-tile-name { font-size: 0.78rem; overflow-wrap: anywhere; }
+.rec-tile-count { font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+
+/* ---- 商店 ---- */
+.shop-balance-row { flex-wrap: wrap; justify-content: space-between; min-height: 60px; }
+.shop-balance .coin { font-size: 1.5rem; color: var(--ink); }
+.shop-hint { text-align: right; }
+.shop-row { gap: 10px; padding-left: 10px; padding-right: 10px; }
+.shop-art { flex: 0 0 56px; width: 56px; height: 56px; object-fit: contain; }
+.shop-name { overflow-wrap: anywhere; }
+.shop-price .coin { font-weight: 600; }
+.shop-action { flex: 0 0 auto; min-height: 44px; min-width: 76px; }
+.shop-clear {
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+.shop-clear-row { padding-top: 2px; padding-bottom: 2px; }
+
+/* ---- 白噪音 sheet ---- */
+.snd-sheet { padding-bottom: 4px; }
+.snd-row { flex-wrap: wrap; gap: 4px 12px; min-height: 56px; cursor: pointer; }
+.snd-label { flex: 0 0 3em; font-weight: 600; }
+.snd-slider {
+  flex: 1 1 160px;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.snd-footer { margin: 8px 4px 0; }
+.snd-check {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.snd-toggle-row { min-height: 52px; }

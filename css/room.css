@@ -1,0 +1,166 @@
+/* The room scene and the character (js/room.js). Every position is a
+   percentage of the 361:320 frame, set inline by room.js. */
+
+.room-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 361 / 320;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--wall, #f7e3c7);
+  isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.room-frame img { max-width: none; }
+
+.room-wall {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.room-piece { position: absolute; }
+.room-slot { pointer-events: none; }
+
+.room-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.room-drop-item { display: grid; place-items: center; }
+.room-drop-item img { width: 100%; height: 100%; object-fit: contain; }
+.room-drop-item .emoji-fallback { font-size: 2.4rem; line-height: 1; }
+
+/* ---- character ---- */
+.room-char {
+  position: absolute;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    left 0.5s cubic-bezier(0.34, 1.3, 0.64, 1),
+    top 0.5s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.room-char:focus { outline: none; }
+.room-char:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 12px; }
+
+.room-char-hop,
+.room-char-ambient {
+  position: absolute;
+  inset: 0;
+}
+
+.room-char-ambient { transform-origin: 50% 100%; }
+.room-char-ambient[data-mood="idle"] { animation: room-hover 2.2s ease-in-out infinite alternate; }
+.room-char-ambient[data-mood="focus"] { animation: room-sway 2.2s ease-in-out infinite alternate; }
+
+.room-char-body,
+.room-flame-mood,
+.room-flame,
+.room-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.room-char-body {
+  transform-origin: 50% 100%;
+  animation: room-breathe 1.6s ease-in-out infinite alternate;
+}
+.room-char-ambient[data-mood="sleep"] .room-char-body { animation-duration: 2.4s; }
+
+.room-flame-mood {
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.5s ease-in-out;
+}
+.room-flame { animation: room-flicker 1.5s ease-in-out infinite; }
+
+@keyframes room-hover { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+@keyframes room-sway { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
+@keyframes room-breathe { from { transform: scaleY(1); } to { transform: scaleY(1.025); } }
+@keyframes room-flicker {
+  0%, 100% { transform: translateY(0) scale(0.96); }
+  33.333% { transform: translateY(0) scale(1.08); }
+  66.667% { transform: translateY(-4px) scale(0.96); }
+}
+
+/* Moves without the spring (first layout, reduced motion). */
+.room-no-move .room-char,
+.room-no-move .room-bubble-anchor { transition: none; }
+
+/* ---- speech bubble ---- */
+.room-bubble-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition:
+    left 0.5s cubic-bezier(0.34, 1.3, 0.64, 1),
+    top 0.5s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.room-bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  width: max-content;
+  max-width: 150px;
+  padding: 8px 12px;
+  border: 2px solid var(--primary);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.room-bubble-tail-right { transform-origin: 100% 100%; }
+.room-bubble-tail-left { transform-origin: 0% 100%; }
+
+.room-bubble-tail {
+  position: absolute;
+  bottom: -8px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--paper);
+}
+.room-bubble-tail-right .room-bubble-tail { right: -4px; }
+.room-bubble-tail-left .room-bubble-tail { left: -4px; }
+
+/* ---- reduced motion (also toggled live by room.js) ---- */
+.room-reduced .room-char-ambient,
+.room-reduced .room-char-body,
+.room-reduced .room-flame { animation: none; }
+.room-reduced .room-char,
+.room-reduced .room-bubble-anchor { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .room-char-ambient,
+  .room-char-body,
+  .room-flame { animation: none; }
+  .room-char,
+  .room-bubble-anchor { transition: none; }
+}
