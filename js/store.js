@@ -188,8 +188,10 @@ export function createStore({ storage, locks, minute = 60_000 }) {
 
     read,
 
+    /** Every part from ONE parse of the stored value, so they always belong together. */
     readAll() {
-      return Object.fromEntries(KEYS.map((key) => [key, read(key)]));
+      const state = readState();
+      return Object.fromEntries(KEYS.map((key) => [key, normalize(key, state[key] ?? null)]));
     },
 
     /** Applies fn to the freshest stored value under the lock and saves its return value. */

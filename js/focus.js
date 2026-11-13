@@ -227,11 +227,16 @@ export function mount(section, ctx) {
     const { item, success, minutes, mode } = result;
     let sheet;
     const actions = [];
+    let stopFollowing = () => {};
     if (success && mode === "pomodoro") {
-      actions.push(h("button", {
-        class: "btn primary block", type: "button", text: `休息 ${store.read("settings").breakMinutes} 分鐘`,
+      const breakLabel = () => `休息 ${store.read("settings").breakMinutes} 分鐘`;
+      const breakButton = h("button", {
+        class: "btn primary block", type: "button", text: breakLabel(),
         onclick: () => { sheet.close(); run(engine.startBreak()); },
-      }));
+      });
+      // The label always shows the length startBreak() will use.
+      stopFollowing = store.subscribe(() => { breakButton.textContent = breakLabel(); });
+      actions.push(breakButton);
     }
     actions.push(h("button", { class: "btn block", type: "button", text: success ? "收下" : "好", onclick: () => sheet.close() }));
     const art = itemImage(item);
@@ -239,6 +244,7 @@ export function mount(section, ctx) {
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) art.classList.add("pop-in");
     sheet = openSheet({
       onClose: () => {
+        stopFollowing();
         if (openResultSheet === sheet) openResultSheet = null;
         onClose?.();
       },

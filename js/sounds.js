@@ -13,6 +13,7 @@ export function createMixer({ store }) {
   let lastPhase = "idle";
   const buffers = new Map(); // id -> AudioBuffer | null (null = missing/undecodable)
   const loading = new Map(); // id -> Promise
+  const failedAt = new Map(); // id -> time of the last failed load
   const voices = new Map(); // id -> { source, gain }
   // Slider values not written to the store yet; they win over stored volumes.
   // Each edit carries a version, so an edit is sent at most once and an
@@ -41,6 +42,7 @@ export function createMixer({ store }) {
   function load(id) {
     if (buffers.has(id)) return Promise.resolve(buffers.get(id));
     if (loading.has(id)) return loading.get(id);
+    if (Date.now() - (failedAt.get(id) ?? 0) < 30_000) return Promise.resolve(null);
     const ctx = audio;
     const promise = fetch(`assets/${id}.wav`)
       .then((response) => {
@@ -57,7 +59,10 @@ export function createMixer({ store }) {
         return null;
       })
       .then((buffer) => {
-        buffers.set(id, buffer);
+        // Cache only a decoded sound; a failure (e.g. offline before the
+        // cache was filled) is retried on a later sync, at most every 30 s.
+        if (buffer) buffers.set(id, buffer);
+        else failedAt.set(id, Date.now());
         loading.delete(id);
         return buffer;
       });
@@ -279,13 +284,14 @@ export function createMixer({ store }) {
         h("label", { class: "row snd-row snd-toggle-row" }, h("span", { class: "grow", text: "休息時也播放" }), toggle))),
     );
 
-    // Reflect changes made in another tab, without fighting the user's drag.
+    // Reflect stored changes (another tab, an import). A slider with an
+    // unsaved edit (it is being dragged) keeps its value until that is saved.
     const unsubscribe = store.subscribe(() => {
       const fresh = soundState();
       for (const [id, slider] of sliders) {
-        if (!(id in pending) && document.activeElement !== slider) slider.value = String(fresh.volumes[id] ?? 0);
+        if (!(id in pending)) slider.value = String(fresh.volumes[id] ?? 0);
       }
-      if (document.activeElement !== toggle) toggle.checked = Boolean(fresh.playDuringBreak);
+      toggle.checked = Boolean(fresh.playDuringBreak);
     });
 
     uiOpenSheet({
