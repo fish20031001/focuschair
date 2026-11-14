@@ -43,12 +43,20 @@ export function mount(section, ctx) {
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const title = trimmed(input.value);
+    const submitted = input.value;
+    const title = trimmed(submitted);
     if (!title) return;
-    input.value = "";
-    syncAddButton();
     const todo = { id: crypto.randomUUID(), title, done: false, createdAt: Date.now(), doneAt: null };
-    store.update("todos", (todos) => [...todos, todo]).catch(ctx.report);
+    // The text stays until it is saved, so a failed save can be retried;
+    // it is cleared only if the user has not typed something else since.
+    store.update("todos", (todos) => [...todos, todo])
+      .then(() => {
+        if (input.value === submitted) {
+          input.value = "";
+          syncAddButton();
+        }
+      })
+      .catch(ctx.report);
   });
 
   // ---- actions ----
@@ -74,8 +82,15 @@ export function mount(section, ctx) {
       event.preventDefault();
       const title = trimmed(field.value);
       if (!title) return;
-      sheet.close();
-      store.update("todos", (todos) => todos.map((t) => (t.id === todo.id ? { ...t, title } : t))).catch(ctx.report);
+      // The sheet closes only once the new name is saved; on failure it
+      // stays open with the text, so the user can try again.
+      save.disabled = true;
+      store.update("todos", (todos) => todos.map((t) => (t.id === todo.id ? { ...t, title } : t)))
+        .then(() => sheet.close())
+        .catch((error) => {
+          sync();
+          ctx.report(error);
+        });
     });
     field.focus();
     field.select();

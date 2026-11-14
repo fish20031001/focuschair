@@ -18,11 +18,30 @@ const params = new URLSearchParams(location.search);
 // Dev-only fast clock: one minute lasts one second. Ignored on any other host.
 const fast = local && params.has("fast");
 
-const store = createStore({ storage: window.localStorage, locks: navigator.locks, minute: fast ? 1000 : 60_000 });
-hydrateIcons();
+// Getting localStorage can itself throw (SecurityError) when the browser
+// blocks site data; that must still end in a readable notice, not a blank page.
+function openStorage() {
+  try {
+    const storage = window.localStorage;
+    storage.getItem("focuschair.v1");
+    return storage;
+  } catch {
+    return null;
+  }
+}
 
-if (!store.canWrite) {
-  document.getElementById("blocked").hidden = false;
+hydrateIcons();
+const storage = navigator.locks ? openStorage() : null;
+const store = storage ? createStore({ storage, locks: navigator.locks, minute: fast ? 1000 : 60_000 }) : null;
+
+if (!store?.canWrite) {
+  const blocked = document.getElementById("blocked");
+  if (navigator.locks && !storage) {
+    blocked.querySelector("h1").textContent = "無法使用瀏覽器的儲存空間";
+    blocked.querySelector("p").textContent = "這個 app 需要把資料存在瀏覽器裡。請關閉私密瀏覽，或在設定中允許網站資料後再開啟。";
+  }
+  blocked.hidden = false;
+  blocked.setAttribute("role", "alert");
   document.getElementById("app").hidden = true;
   document.querySelector(".tabbar").hidden = true;
 } else {
