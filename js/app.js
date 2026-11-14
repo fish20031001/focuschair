@@ -94,7 +94,11 @@ function start() {
     } finally {
       ticking = false;
     }
-    views.focus.render(ctx.state());
+    const state = ctx.state();
+    views.focus.render(state);
+    // Re-syncing on every tick lets a sound that failed to load (e.g. while
+    // offline) be retried after its cooldown, without any other change.
+    mixer.sync(phaseOf(state));
     syncWakeLock();
   }
 

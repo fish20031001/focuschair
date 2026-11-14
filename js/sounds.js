@@ -14,6 +14,7 @@ export function createMixer({ store }) {
   const buffers = new Map(); // id -> AudioBuffer | null (null = missing/undecodable)
   const loading = new Map(); // id -> Promise
   const failedAt = new Map(); // id -> time of the last failed load
+  let refreshOpenSheet = null; // set while the sound sheet is open
   const voices = new Map(); // id -> { source, gain }
   // Slider values not written to the store yet; they win over stored volumes.
   // Each edit carries a version, so an edit is sent at most once and an
@@ -234,6 +235,7 @@ export function createMixer({ store }) {
             if (pending[id]?.version === edit.version) delete pending[id];
           }
           toast("音量設定無法儲存", { error: true });
+          refreshOpenSheet?.(); // sliders go back to the stored volumes
           sync();
         }
       });
@@ -286,19 +288,22 @@ export function createMixer({ store }) {
 
     // Reflect stored changes (another tab, an import). A slider with an
     // unsaved edit (it is being dragged) keeps its value until that is saved.
-    const unsubscribe = store.subscribe(() => {
+    const refresh = () => {
       const fresh = soundState();
       for (const [id, slider] of sliders) {
         if (!(id in pending)) slider.value = String(fresh.volumes[id] ?? 0);
       }
       toggle.checked = Boolean(fresh.playDuringBreak);
-    });
+    };
+    const unsubscribe = store.subscribe(refresh);
+    refreshOpenSheet = refresh;
 
     uiOpenSheet({
       title: "白噪音",
       content,
       onClose: () => {
         unsubscribe();
+        if (refreshOpenSheet === refresh) refreshOpenSheet = null;
         flush();
       },
     });
