@@ -63,7 +63,7 @@ function start() {
     state: () => ({ ...store.readAll(), now: Date.now() }),
     report(error) {
       console.error(error);
-      toast("發生錯誤，請再試一次");
+      toast("發生錯誤，請再試一次", { error: true });
     },
     showResult: (result) => views.focus.showResult(result),
   };

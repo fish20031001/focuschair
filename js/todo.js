@@ -38,25 +38,29 @@ export function mount(section, ctx) {
     doneGroup,
   );
 
-  const syncAddButton = () => { addButton.disabled = trimmed(input.value) === ""; };
+  let adding = false; // one save at a time, so a double tap cannot add twice
+  const syncAddButton = () => { addButton.disabled = adding || trimmed(input.value) === ""; };
   input.addEventListener("input", syncAddButton);
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const submitted = input.value;
     const title = trimmed(submitted);
-    if (!title) return;
+    if (!title || adding) return;
+    adding = true;
+    syncAddButton();
     const todo = { id: crypto.randomUUID(), title, done: false, createdAt: Date.now(), doneAt: null };
     // The text stays until it is saved, so a failed save can be retried;
     // it is cleared only if the user has not typed something else since.
     store.update("todos", (todos) => [...todos, todo])
       .then(() => {
-        if (input.value === submitted) {
-          input.value = "";
-          syncAddButton();
-        }
+        if (input.value === submitted) input.value = "";
       })
-      .catch(ctx.report);
+      .catch(ctx.report)
+      .finally(() => {
+        adding = false;
+        syncAddButton();
+      });
   });
 
   // ---- actions ----
