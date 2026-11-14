@@ -78,20 +78,26 @@ export function mount(section, ctx) {
       attrs: { "aria-label": "名稱", autocomplete: "off", enterkeyhint: "done" },
     });
     const save = h("button", { class: "btn primary block", type: "submit", text: "儲存" });
-    const sync = () => { save.disabled = trimmed(field.value) === ""; };
+    let saving = false; // while the rename is being saved, field and button are locked
+    const sync = () => { save.disabled = saving || trimmed(field.value) === ""; };
     field.addEventListener("input", sync);
     const renameForm = h("form", { class: "todo-rename" }, field, save);
     const sheet = openSheet({ title: "重新命名", content: renameForm });
     renameForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const title = trimmed(field.value);
-      if (!title) return;
-      // The sheet closes only once the new name is saved; on failure it
-      // stays open with the text, so the user can try again.
-      save.disabled = true;
+      if (!title || saving) return;
+      // The sheet closes only once the new name is saved. Until then the
+      // field is locked, so nothing typed can be lost; on failure it is
+      // unlocked with the submitted text still in it.
+      saving = true;
+      field.readOnly = true;
+      sync();
       store.update("todos", (todos) => todos.map((t) => (t.id === todo.id ? { ...t, title } : t)))
         .then(() => sheet.close())
         .catch((error) => {
+          saving = false;
+          field.readOnly = false;
           sync();
           ctx.report(error);
         });
