@@ -269,7 +269,8 @@ export function mount(section, ctx) {
       type: "checkbox", checked: settings.keepAwake,
       onchange: (e) => {
         const box = e.target;
-        store.update("settings", (s) => ({ ...s, keepAwake: box.checked })).catch((error) => {
+        const value = box.checked; // the user's choice, captured before waiting for the lock
+        store.update("settings", (s) => ({ ...s, keepAwake: value })).catch((error) => {
           console.error(error);
           box.checked = store.read("settings").keepAwake; // back to what is stored
           toast("設定無法儲存", { error: true });
