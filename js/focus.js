@@ -267,7 +267,14 @@ export function mount(section, ctx) {
     const settings = store.read("settings");
     const keepAwake = h("input", {
       type: "checkbox", checked: settings.keepAwake,
-      onchange: (e) => setSettings({ keepAwake: e.target.checked }),
+      onchange: (e) => {
+        const box = e.target;
+        store.update("settings", (s) => ({ ...s, keepAwake: box.checked })).catch((error) => {
+          console.error(error);
+          box.checked = store.read("settings").keepAwake; // back to what is stored
+          toast("設定無法儲存", { error: true });
+        });
+      },
     });
     const fileInput = h("input", {
       type: "file", accept: "application/json,.json", hidden: true,

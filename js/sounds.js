@@ -276,7 +276,11 @@ export function createMixer({ store }) {
     toggle.addEventListener("change", () => {
       unlock();
       const value = toggle.checked;
-      store.update("sound", (s) => ({ ...s, playDuringBreak: value })).catch((error) => console.error(error));
+      store.update("sound", (s) => ({ ...s, playDuringBreak: value })).catch((error) => {
+        console.error(error);
+        toggle.checked = Boolean(soundState().playDuringBreak); // back to what is stored
+        toast("設定無法儲存", { error: true });
+      });
     });
 
     const content = h("div", { class: "snd-sheet" },
